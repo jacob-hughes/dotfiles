@@ -7,3 +7,6 @@ alias b64encode='python -c "import sys, base64; print base64.b64encode(sys.argv[
 alias b64decode='python -c "import sys, base64; print base64.b64decode(sys.argv[1]);"'
 alias prettyjson='python -m json.tool'
 
+# Only load Liquid Prompt in interactive shells, not from a script or from scp
+[[ $- = *i* ]] && source ~/liquidprompt/liquidprompt
+
