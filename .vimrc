@@ -1,5 +1,12 @@
 set nocompatible              " be iMproved, required
 filetype off                  " required
+
+" proper vim spacing
+set ai 
+set ts=4 
+set sts=4 
+set et 
+set sw=4
 set encoding=utf-8
 
 " set the runtime path to include Vundle and initialize
@@ -14,7 +21,6 @@ Plugin 'morhetz/gruvbox'
 Plugin 'vim-airline/vim-airline'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'tpope/vim-surround'
-Plugin 'wincent/command-t'
 Plugin 'jlanzarotta/bufexplorer'
 call vundle#end()            " required
 filetype plugin indent on    " required
@@ -47,3 +53,16 @@ set backupdir=~/.vim/var/backup//
 set directory=~/.vim/var/swap//
 set undodir=~/.vim/var/undo//
 
+" pep8 line margin display
+if exists('+colorcolumn')
+    set colorcolumn=80
+else
+    au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
+endif
+
+" strip whitespace at the end of a line upon write
+if !exists("autocommands_loaded")
+      let autocommands_loaded = 1
+        autocmd BufRead,BufNewFile *.php setlocal dict+=~/.vim/bundle/vim-php-dictionary/dict/PHP.dict
+          autocmd BufWritePre * :%s/\s\+$//e
+      endif
