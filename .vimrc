@@ -2,12 +2,16 @@ set nocompatible              " be iMproved, required
 filetype off                  " required
 
 " proper vim spacing
-set ai 
-set ts=4 
-set sts=4 
-set et 
+set ai
+set ts=4
+set sts=4
+set et
 set sw=4
 set encoding=utf-8
+
+" speed up vim!
+set ttyfast
+set lazyredraw
 
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
@@ -43,7 +47,7 @@ let NERDTreeIgnore = ['\.pyc$', '\.pyo$']
 " Open and focus mappings for NERDTree
 nnoremap <leader>df :NERDTreeFocus<CR>
 nnoremap <leader>dt :NERDTreeToggle<CR>
-colorscheme gruvbox 
+colorscheme gruvbox
 set t_Co=256
 set hidden
 let g:airline_powerline_fonts = 1
