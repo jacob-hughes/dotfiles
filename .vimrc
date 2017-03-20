@@ -9,9 +9,6 @@ set et
 set sw=4
 set encoding=utf-8
 
-" speed up vim!
-set ttyfast
-set lazyredraw
 
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim

@@ -1,1 +1,4 @@
 .dotfiles
+.DS_STORE
+./vim/bundle/*
+!.vim/bundle/Vundle.vim
