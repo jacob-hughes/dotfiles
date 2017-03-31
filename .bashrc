@@ -1,3 +1,6 @@
+source ~/.git-autocomplete
+source ~/.git-prompt
+
 alias cfg='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 
 # URL-encode strings
