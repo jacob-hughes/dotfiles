@@ -45,16 +45,30 @@ let NERDTreeIgnore = ['\.pyc$', '\.pyo$']
 nnoremap <leader>df :NERDTreeFocus<CR>
 nnoremap <leader>dt :NERDTreeToggle<CR>
 colorscheme gruvbox
+set background=dark
+
 set t_Co=256
 set hidden
 let g:airline_powerline_fonts = 1
 
+" Custom backup / swap / undo dirs
+
+if !isdirectory($HOME.'/.vim/var/backup/')
+    call mkdir($HOME.'/.vim/var/backup/', 'p')
+endif
+if !isdirectory($HOME.'/.vim/var/swap/')
+    call mkdir($HOME.'/.vim/var/swap/', 'p')
+endif
+if !isdirectory($HOME.'/.vim/var/undo/')
+    call mkdir($HOME.'/.vim/var/undo/', 'p')
+endif
 
 set backupdir=~/.vim/var/backup//
 set directory=~/.vim/var/swap//
 set undodir=~/.vim/var/undo//
 
 " pep8 line margin display
+
 if exists('+colorcolumn')
     set colorcolumn=80
 else

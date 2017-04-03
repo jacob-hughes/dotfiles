@@ -1,3 +1,6 @@
+source ~/.git-autocomplete
+source ~/.git-prompt
+
 alias cfg='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 
 # URL-encode strings
@@ -12,3 +15,6 @@ alias prettyjson='python -m json.tool'
 
 #osx specific
 alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
+
+export VISUAL=vim
+export EDITOR="$VISUAL"
