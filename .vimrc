@@ -18,6 +18,8 @@ Plugin 'tpope/vim-fugitive'
 Plugin 'scrooloose/nerdtree'
 Plugin 'scrooloose/syntastic'
 Plugin 'morhetz/gruvbox'
+Plugin 'dracula/vim'
+Plugin 'tomasr/molokai'
 Plugin 'vim-airline/vim-airline'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'tpope/vim-surround'
@@ -47,8 +49,10 @@ nnoremap <leader>dt :NERDTreeToggle<CR>
 
 colorscheme gruvbox
 set background=dark
-
+hi Normal guibg=NONE ctermbg=NONE
 set t_Co=256
+
+
 set hidden
 let g:airline_powerline_fonts = 1
 
