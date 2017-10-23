@@ -10,8 +10,13 @@ alias b64encode='python -c "import sys, base64; print base64.b64encode(sys.argv[
 alias b64decode='python -c "import sys, base64; print base64.b64decode(sys.argv[1]);"'
 alias prettyjson='python -m json.tool'
 
-# Only load Liquid Prompt in interactive shells, not from a script or from scp
-[[ $- = *i* ]] && source ~/liquidprompt/liquidprompt
-
 export VISUAL=vim
 export EDITOR="$VISUAL"
+
+export WORKON_HOME=~/.virtualenvs
+export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python2.7
+export VIRTUALENVWRAPPER_VIRTUALENV=/usr/bin/virtualenv2
+
+source /usr/bin/virtualenvwrapper.sh
+export PS1="\[\e[36m\][\[\e[m\] \u@\H \w \[\e[36m\]]\[\e[m\]: \n\[\e[36m\]\\$\[\e[m\] "
+

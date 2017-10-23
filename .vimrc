@@ -16,11 +16,9 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'tpope/vim-fugitive'
 Plugin 'scrooloose/nerdtree'
-Plugin 'scrooloose/syntastic'
+Plugin 'w0rp/ale'
 Plugin 'morhetz/gruvbox'
-Plugin 'dracula/vim'
-Plugin 'tomasr/molokai'
-Plugin 'vim-airline/vim-airline'
+Plugin 'itchyny/lightline.vim'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'tpope/vim-surround'
 Plugin 'jlanzarotta/bufexplorer'
@@ -54,7 +52,6 @@ set t_Co=256
 
 
 set hidden
-let g:airline_powerline_fonts = 1
 
 " Custom backup / swap / undo dirs
 
@@ -79,6 +76,18 @@ if exists('+colorcolumn')
 else
     au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
 endif
+
+" Turn off linewise keys. Normally, the `j' and `k' keys move the cursor down one entire line. with
+" line wrapping on, this can cause the cursor to actually skip a few lines on the screen because
+" it's moving from line N to line N+1 in the file.
+nmap j gj
+nmap k gk
+
+" Ale
+let g:ale_sign_warning = '▲'
+let g:ale_sign_error = '✗'
+highlight link ALEWarningSign String
+highlight link ALEErrorSign Title
 
 " strip whitespace at the end of a line upon write
 if !exists("autocommands_loaded")
