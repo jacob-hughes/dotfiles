@@ -1,9 +1,9 @@
-URxvt.font: xft:Inconsolata:size=12:bold:hinting=true:antialias=true
-URxvt.boldFont: xft:Inconsolata:size=12:bold:hinting=true:antialias=true
+URxvt.font: xft:Iosevka Medium:size=10:hinting=true:antialias=true, xft:Terminess Powerline:size=10
+URxvt.boldFont: xft:Iosevka Heavy:size=10:bold:hinting=true:antialias=true
 
-URxvt.letterSpace: -1
+URxvt.letterSpace: 0
 
-URxvt.internalBorder: 40
+URxvt.internalBorder: 20
 URxvt.externalBorder: 0
 
 URxvt.scrollBar: false
@@ -20,8 +20,6 @@ URxvt*color0:   #999
 URxvt*color1:   #fb4245
 URxvt*color2:   #50fa7b
 URxvt*color3:   #f0fa8b
-URxvt*color4:   #49b9fe
-URxvt*color5:   #fb4cb3
 URxvt*color6:   #8be9fd
 URxvt*color7:   #ededec
 URxvt*color8:   #555555
@@ -32,5 +30,15 @@ URxvt*color12:   #49b9fe
 URxvt*color13:   #fb4cb3
 URxvt*color14:   #8be9fd
 URxvt*color15:   #ededec
-URxvt.perl-ext-common: fullscreen
+URxvt.perl-ext-common: fullscreen,resize-font
 URxvt.keysym.F11: perl:fullscreen:switch
+
+! ------------------------------------------------------------------------------
+! ROFI Color theme
+! ------------------------------------------------------------------------------
+
+rofi.color-enabled: true
+rofi.color-window: #2f343f, #2f343f, #2f343f
+rofi.color-normal: #2f343f, #d8dee8, #2f343f, #2f343f, #bf616a
+rofi.color-active: #2f343f, #b48ead, #2f343f, #2f343f, #93e5cc
+rofi.color-urgent: #2f343f, #ebcb8b, #2f343f, #2f343f, #ebcb8b

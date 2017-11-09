@@ -1,1 +1,5 @@
 .dotfiles
+.config/chromium
+.config/spotify
+.config/xfce4/desktop
+.config/pulse

@@ -1,0 +1,4 @@
+compton --config ~/.config/compton.conf &
+polybar -c ~/.config/xfce4/polybar top &
+plank &
+
