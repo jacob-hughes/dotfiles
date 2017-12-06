@@ -20,14 +20,27 @@ Plugin 'w0rp/ale'
 Plugin 'morhetz/gruvbox'
 Plugin 'itchyny/lightline.vim'
 Plugin 'airblade/vim-gitgutter'
+Plugin 'racer-rust/vim-racer'
+Plugin 'tpope/vim-commentary'
+Plugin 'tomasr/molokai'
 Plugin 'tpope/vim-surround'
 Plugin 'jlanzarotta/bufexplorer'
 Plugin 'christoomey/vim-tmux-navigator'
+Plugin 'junegunn/fzf.vim'
 Plugin 'airblade/vim-rooter'
 call vundle#end()            " required
 filetype plugin indent on    " required
 syntax on
 set nu
+
+" Signs column (gutter) background colour
+"let g:gitgutter_override_sign_column_highlight = 0
+"highlight SignColumn ctermbg=None
+
+" Quickly open fuzzy finding in fzf
+nmap ; :Buffers<CR>
+nmap <Leader>f :Files<CR>
+nmap <Leader>r :Tags<CR>
 
 " Allow backspace for more than current insert
 set backspace=indent,eol,start
@@ -46,11 +59,21 @@ let NERDTreeIgnore = ['\.pyc$', '\.pyo$']
 nnoremap <leader>df :NERDTreeFocus<CR>
 nnoremap <leader>dt :NERDTreeToggle<CR>
 
-colorscheme gruvbox
-set background=dark
-hi Normal guibg=NONE ctermbg=NONE
+let g:molokai_original=1
+let g:rehash256=1
+colorscheme molokai
 set t_Co=256
 
+" GitGutter and Ale styling
+let g:gitgutter_override_sign_column_highlight = 0
+hi clear SignColumn
+hi LineNr ctermbg=None
+hi GitGutterAdd ctermbg=None ctermfg=green
+hi GitGutterChange ctermbg=None ctermfg=yellow
+hi GitGutterDelete ctermbg=None ctermfg=red
+
+" Remove black bg from vsplit bar
+hi VertSplit ctermbg=None
 
 set hidden
 

@@ -12,26 +12,38 @@ URxvt*fading: 30
 
 ! not mix bright with bold
 URxvt.intensityStyles: false
-
-URxvt*background:   #1e1f28
-URxvt*foreground:   #ebece6
 URxvt*cursorColor:   #e4e4e4
-URxvt*color0:   #999
-URxvt*color1:   #fb4245
-URxvt*color2:   #50fa7b
-URxvt*color3:   #f0fa8b
-URxvt*color6:   #8be9fd
-URxvt*color7:   #ededec
-URxvt*color8:   #555555
-URxvt*color9:   #fb4245
-URxvt*color10:   #50fa7b
-URxvt*color11:   #f0fa8b
-URxvt*color12:   #49b9fe
-URxvt*color13:   #fb4cb3
-URxvt*color14:   #8be9fd
-URxvt*color15:   #ededec
 URxvt.perl-ext-common: fullscreen,resize-font
 URxvt.keysym.F11: perl:fullscreen:switch
+
+! terminal colours
+ *foreground:#CCCCCC
+ *background:#1c1c1c
+
+! !black darkgray
+ *color0:    #1B1D1E
+ *color8:    #808080
+! !darkred red
+ *color1:    #FF0044
+ *color9:    #F92672
+! !darkgreen green
+ *color2:    #82B414
+ *color10:   #A6E22E
+! !darkyellow yellow
+ *color3:    #FD971F
+ *color11:   #E6DB74
+! !darkblue blue
+ *color4:    #266C98
+ *color12:   #7070F0
+! !darkmagenta magenta
+ *color5:    #AC0CB1
+ *color13:   #D63AE1
+! !darkcyan cyan
+ *color6:    #AE81FF
+ *color14:   #66D9EF
+! !gray white
+ *color7:    #CCCCCC
+ *color15: #F8F8F2
 
 ! ------------------------------------------------------------------------------
 ! ROFI Color theme
