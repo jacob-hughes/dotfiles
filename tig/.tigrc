@@ -1,0 +1,1 @@
+bind generic Y !@zsh -c "echo -n %(commit) | /usr/bin/xclip -sel clip"

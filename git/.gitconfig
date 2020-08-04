@@ -1,0 +1,10 @@
+[user]
+	email = jh@jakehughes.uk
+	name = Jacob Hughes
+[core]
+    excludesfile=~/.gitignore-global
+	autocrlf = input
+[pull]
+	rebase = true
+[http]
+	cookiefile = /home/jake/.gitcookies

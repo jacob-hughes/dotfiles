@@ -1,0 +1,2 @@
+map u :up<CR>
+map d :down<CR>
