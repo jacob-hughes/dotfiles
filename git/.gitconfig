@@ -1,6 +1,6 @@
 [user]
 	email = jh@jakehughes.uk
-	name = Jacob Hughes
+	name = Jake Hughes
 [core]
     excludesfile=~/.gitignore-global
 	autocrlf = input

@@ -53,6 +53,14 @@ bindkey -e
 
 export FZF_DEFAULT_COMMAND='ag -g ""'
 
+# Hex tools
+
+tobin(){
+    local n bit
+    for (( n=$1 ; n>0 ; n >>= 1 )); do  bit="$(( n&1 ))$bit"; done
+    printf "%s\n" "$bit"
+}
+
 # Ctrl r + fzf support
 . ~/.zsh/fzf/key-bindings.zsh
 . ~/.zsh/fzf/completion.zsh

@@ -12,3 +12,4 @@ setopt hist_reduce_blanks
 HISTSIZE=15000
 SAVEHIST=15000
 HISTFILE=~/.zsh_history
+source "$HOME/.cargo/env"

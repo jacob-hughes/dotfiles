@@ -13,7 +13,6 @@ Plug 'itchyny/lightline.vim'            " Lightline
 Plug 'bling/vim-bufferline'             " Show the list of buffers in the command bar
 Plug 'tpope/vim-commentary'             " Easy un/commenting
 Plug 'mhinz/vim-signify'                " Show diff +/- signs on LHS of screen
-Plug 'w0rp/ale'                         " Asynchronous linting
 Plug 'christoomey/vim-tmux-navigator'   " Hop between tmux and vim splits
 Plug 'rust-lang/rust.vim'               " Needed for ALE
 Plug 'ntpeters/vim-better-whitespace'   " Highlight whitespace at end of lines
@@ -22,6 +21,7 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'                 " FZF vim plugin
 Plug 'Chiel92/vim-autoformat'
 Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+Plug 'vimwiki/vimwiki'
 call plug#end()
 
 autocmd FileType tex ALEDisable
@@ -114,6 +114,9 @@ let g:fzf_tags_command = 'ctags -R'
 let g:fzf_commands_expect = 'alt-enter,ctrl-x'
 let $FZF_DEFAULT_COMMAND = 'ag -g ""' " respect gitignore
 
+" Prevent filenames from showing up in :Ag results
+command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}), <bang>0)
+
 nmap <Leader>f :Files<CR>
 nmap <Leader>/ :Lines<CR>
 nmap <Leader>b :Buffers<CR>
@@ -133,6 +136,14 @@ if s:extfname ==? "tex"
     nmap <F5> :LatexTOC<CR>
     setl noai nocin nosi inde=      " Disable auto indentation
 endif
+
+" Wiki settings
+set nocompatible
+filetype plugin on
+syntax on
+let g:vimwiki_list = [{'path': '~/vimwiki/',
+                      \ 'syntax': 'markdown', 'ext': '.md'}]
+let g:vimwiki_global_ext = 0
 
 " =========================== COC Settings ====================================
 
