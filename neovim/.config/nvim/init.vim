@@ -24,9 +24,6 @@ Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 Plug 'vimwiki/vimwiki'
 call plug#end()
 
-autocmd FileType tex ALEDisable
-
-
 " General settings
 set smartcase                      " Ignores case when all lowercase, cs if uppercase included.
 set number                         " Show line numbers
@@ -178,3 +175,4 @@ noremap <F3> :Autoformat<CR>
 
 " Symbol renaming.
 nmap <leader>rn <Plug>(coc-rename)
+nmap <Leader>h :CocCommand clangd.switchSourceHeader<CR>
