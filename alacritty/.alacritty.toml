@@ -1,0 +1,49 @@
+[env]
+TERM = "alacritty"
+
+[window]
+padding = { x = 20, y = 20 }
+startup_mode = "Fullscreen"
+
+[font]
+size = 10.0
+offset = { x = 1, y = 1 }
+
+[font.normal]
+family = "Iosevka Term Medium"
+style = "Normal"
+
+[font.italic]
+family = "Iosevka Term Medium"
+style = "Italic"
+
+[[keyboard.bindings]]
+action = "ToggleFullscreen"
+key = "F11"
+
+# Onedark colors
+[colors.primary]
+background = '#282c34'
+foreground = '#abb2bf'
+
+# Normal colors
+[colors.normal]
+black   = '#1e2127'
+red     = '#e06c75'
+green   = '#98c379'
+yellow  = '#d19a66'
+blue    = '#61afef'
+magenta = '#c678dd'
+cyan    = '#56b6c2'
+white   = '#abb2bf'
+
+# Bright colors
+[colors.bright]
+black   = '#5c6370'
+red     = '#e06c75'
+green   = '#98c379'
+yellow  = '#d19a66'
+blue    = '#61afef'
+magenta = '#c678dd'
+cyan    = '#56b6c2'
+white   = '#ffffff'
