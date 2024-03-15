@@ -1,5 +1,4 @@
 function fish_greeting
-    echo Logged in as (whoami)@$hostname at (set_color yellow; date +%T; set_color normal)
 end
 
 # Environment Variables
