@@ -1,0 +1,12 @@
+if [[ ! -f ~/.config/zsh/no-p10k-installer ]]; then
+  echo "Remove this file to trigger the p10k installer when opening a zsh shell" > ~/.config/zsh/no-p10k-installer
+  if read -q "REPLY?Install p10k [Y/n]?" && echo; then
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.config/zsh/p10k
+  else
+    echo "\nRemove ~/.config/zsh/no-p10k-installer to prompt again."
+  fi
+  if read -q "REPLY?Install autosuggestions [Y/n]?" && echo; then
+    git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions \
+      ~/.config/zsh/zsh-autosuggestions
+  fi
+fi
