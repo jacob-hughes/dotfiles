@@ -34,6 +34,9 @@ autoload -z edit ineachdir lspath reset_broken_term
 # Aliases
 source ~/.config/zsh/aliases.zsh
 
+# Machine specific environment variables
+[ -f ~/.config/zsh/untracked-envs.zsh ] && source ~/.config/zsh/untracked-envs.zsh
+
 # Key bindings
 bindkey -e
 

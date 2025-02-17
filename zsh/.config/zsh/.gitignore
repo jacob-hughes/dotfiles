@@ -4,3 +4,4 @@ zsh-autosuggestions/
 p10k/
 .p10k.zsh
 secrets.zsh
+untracked-envs.zsh

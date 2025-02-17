@@ -20,6 +20,7 @@ fi
 alias zc="$EDITOR ~/.config/zsh/.zshrc"
 alias za="$EDITOR ~/.config/zsh/aliases.zsh"
 alias ze="$EDITOR ~/.config/zsh/.zshenv"
+alias zue="$EDITOR ~/.config/zsh/untracked-envs.zsh"
 alias zf="$EDITOR ~/.config/zsh/zfuncs"
 
 alias vc="$EDITOR ~/dotfiles/neovim/.config/nvim/init.lua"
