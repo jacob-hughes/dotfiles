@@ -1,0 +1,250 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Variables
+DOTFILES_DIR="$HOME/dotfiles"
+LOG_FILE="$DOTFILES_DIR/install.log"
+DEPS="tmux zsh git tig curl stow"
+BASE_DOTS="neovim tmux zsh git tig"
+MAC_DOTS="mac"
+LINUX_DOTS="linux"
+
+# Utility functions
+success() { printf "\e[32m[SUCCESS]\e[0m %s\n" "$1"; }
+warning() { printf "\e[33m[WARNING]\e[0m %s\n" "$1"; }
+error() { printf "\e[31m[ERROR]\e[0m %s\n" "$1" >&2; }
+info() { printf "\e[34m[INFO]\e[0m %s\n" "$1"; }
+
+# System detection functions
+detect_sudo() {
+    if command -v doas &>/dev/null; then
+        SUDO="doas"
+    elif command -v sudo &>/dev/null; then
+        SUDO="sudo"
+    else
+        error "Cannot install packages: no sudo/doas command detected."
+        exit 1
+    fi
+}
+
+detect_os() {
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    ARCH=$(uname -m)
+    case "$OS" in
+        darwin)
+            PKG_UPDATE="brew update"
+            PKG_INSTALL="brew install"
+            FULL_DOTS="$BASE_DOTS $MAC_DOTS"
+            OS="macos"
+            ;;
+        linux)
+            FULL_DOTS="$BASE_DOTS $LINUX_DOTS"
+            if command -v apt-get &>/dev/null; then
+                PKG_UPDATE="$SUDO apt-get update"
+                PKG_INSTALL="$SUDO apt-get install -y"
+            elif command -v pacman &>/dev/null; then
+                PKG_UPDATE="$SUDO pacman -Sy"
+                PKG_INSTALL="$SUDO pacman -S --noconfirm"
+            else
+                source /etc/os-release
+                error "Unsupported package manager: $NAME-$VERSION"
+                exit 1
+            fi
+            ;;
+        *)
+            error "Unsupported OS: $OS"
+            exit 1
+            ;;
+    esac
+}
+
+# Installation functions
+install_deps() {
+    info "Installing dependencies for $OS..."
+    if [[ "$OS" == "macos" ]] && ! command -v brew &>/dev/null; then
+        info "Homebrew not found. Installing Homebrew..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        $PKG_INSTALL $DEPS
+    fi
+    $PKG_UPDATE
+    $PKG_INSTALL $DEPS
+
+    chsh -s $(which zsh)
+}
+
+install_neovim() {
+    local url=""
+    local tarball=""
+    local tmp=$(mktemp -d)
+
+    rel=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep "tag_name" | cut -d '"' -f 4)
+    url="https://github.com/neovim/neovim/releases/download/$rel/nvim-$OS-$ARCH.tar.gz"
+    info "Downloading Neovim from $url..."
+    curl --output-dir "$tmp" -LO "$url"
+    echo "Extracting $tarball..."
+    (cd "$tmp" && tar xzvf "nvim-$OS-$ARCH.tar.gz")
+    echo "Installing Neovim to $NV_PREFIX..."
+    $SUDO mkdir -p $NV_PREFIX
+    $SUDO mv $tmp/nvim-$OS-$ARCH/* $NV_PREFIX
+    rm -rf "$tmp"
+
+    if command -v nvim &> /dev/null; then
+        success "Neovim installed to $NV_PREFIX"
+        nvim --version
+    else
+        warning "Installation complete. Ensure '$NV_PREFIX/bin/nvim' is in your PATH."
+    fi
+}
+
+install_dots() {
+    cd "$DOTFILES_DIR" || { error "Dotfiles directory not found: $DOTFILES_DIR"; exit 1; }
+    for dir in */; do
+        if ! [[ " $@ " =~ " ${dir%/} " ]]; then
+            continue
+        else
+            stow -v -R -t "$HOME" "$dir"
+            if [[ ${dir%/} == "neovim" ]]; then
+                if ! command -v nvim &>/dev/null; then
+                    NV_PREFIX="/opt/neovim"
+                    read -p "neovim install prefix (leave blank for /opt/neovim/): " r
+                    if [[ -n "$r" ]]; then
+                        NV_PREFIX="$r"
+                    fi
+                    install_neovim
+                fi
+
+                read -p "Use minimal nvim config? [y/N]:" r
+                if [[ -z "$r" || "$r" == "n" || "$r" != "y" ]]; then
+                    echo "export NVIM_MINIMAL=false" >> $ZDOTDIR/untracked-envs.zsh
+                    success "Installed full nvim config setup"
+                else
+                    echo "export NVIM_MINIMAL=true" >> $ZDOTDIR/untracked-envs.zsh
+                    success "Installed minimal nvim config setup"
+                fi
+                info "This can be changed with the "NVIM_MINIMAL" environment variable."
+                info "(set in $ZDOTDIR/untracked-envs.zsh)"
+            fi
+        fi
+    done
+}
+
+install_opcli() {
+    curl -sS https://downloads.1password.com/linux/keys/1password.asc | \
+        $SUDO gpg --dearmor --output /usr/share/keyrings/1password-archive-keyring.gpg && \
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] https://downloads.1password.com/linux/debian/$(dpkg --print-architecture) stable main" | \
+        $SUDO tee /etc/apt/sources.list.d/1password.list && \
+        $SUDO mkdir -p /etc/debsig/policies/AC2D62742012EA22/ && \
+        curl -sS https://downloads.1password.com/linux/debian/debsig/1password.pol | \
+        $SUDO tee /etc/debsig/policies/AC2D62742012EA22/1password.pol && \
+        $SUDO mkdir -p /usr/share/debsig/keyrings/AC2D62742012EA22 && \
+        curl -sS https://downloads.1password.com/linux/keys/1password.asc | \
+        $SUDO gpg --dearmor --output /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg && \
+        $SUDO apt update && $SUDO apt install 1password-cli
+}
+
+install_secrets() {
+    if ! command -v op &> /dev/null; then
+        if ! command -v apt-get &> /dev/null; then
+            error "Installation of secrets requires apt."
+            exit 1
+        fi
+
+        install_opcli
+    fi
+
+    read -p "1Password service account token: " r
+    if [[ -n "$r" ]]; then
+        OP_SERVICE_ACCOUNT_TOKEN="$r"
+    fi
+
+    op item list --categories "API Credential" --format json | \
+        op item get - --format json | \
+        jq -r '. as $token | .fields[] | \ select (.id == "credential") | "export \($token.title)=\"\(.reference)\""' > \
+        $ZDOTDIR/secrets.zsh
+}
+
+install() {
+    read -p "Install dependencies ($DEPS)? [Y/n]: " r
+    echo
+    if ! [[ -z "$r" || "$r" == "n" || "$r" != "y" ]]; then
+        install_deps
+    fi
+
+    read -p "Install full setup? [y/N]: " r
+    echo
+    if [[ -z "$r" || "$r" == "n" || "$r" != "y" ]]; then
+        info "Installing minimal setup: $BASE_DOTS"
+        install_dots $BASE_DOTS
+    else
+        info "Installing full $OS setup: $FULL_DOTS"
+        install_dots $FULL_DOTS
+    fi
+
+    success "Dotfiles installation complete!"
+}
+
+check() {
+    lhead=$(git rev-parse master)
+    rhead=$(git ls-remote origin -h refs/heads/master | awk '{print $1}')
+
+    if ! git diff-index --quiet HEAD --; then
+        warning "Uncommitted changes in dotfiles."
+    fi
+
+    if [ "$lhead" != "$rhead" ]; then
+        warning "Dotfiles on $HOSTNAME are out of date."
+        read -p "Fetch latest dotfiles? [Y/n]:" r
+        if ! [[ -z "$r" || "$r" == "n" || "$r" != "y" ]]; then
+            git pull --rebase origin master
+        fi
+    fi
+}
+
+update() {
+    error "'$0 update' not yet implemented."
+}
+
+usage() {
+    echo "Usage: $0 <subcommands> [OPTIONS]"
+    echo
+    echo "Commands:"
+    echo "  install   Install dots from scratch."
+    echo "  check     Ensure dots are in sync with remote."
+    echo "  update    Pull dots from remote and update any deps built from source."
+    echo
+    echo "Options:"
+    echo "  -h, --help   Show this help message and exit."
+    exit 1
+}
+
+main() {
+    detect_sudo
+    detect_os
+
+    if [ $# -lt 1 ]; then
+        usage
+    fi
+
+    case "$1" in
+        install)
+            install
+            ;;
+        check)
+            check
+            ;;
+        update)
+            update
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            echo "Error: Unknown command '$1'"
+            usage
+            ;;
+    esac
+}
+
+main "$@"
+
