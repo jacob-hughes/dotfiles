@@ -1,0 +1,16 @@
+# Open a file in my $EDITOR, but use sudoedit -- an alias, which could be
+# ~/bin/doasedit -- if I don't have write permissions.
+
+if [[ $# -eq 0 ]]; then
+    $EDITOR
+elif [[ -e "$1" ]]; then
+    if [[ -w "$1" ]]; then
+        $EDITOR "$1"
+    else
+        sudoedit "$1"
+    fi
+else
+    $EDITOR "$1"
+fi
+
+# vim: ft=zsh

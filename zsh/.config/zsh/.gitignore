@@ -1,0 +1,6 @@
+no-p10k-installer
+zsh-autosuggestions/
+.zsh_history
+p10k/
+.p10k.zsh
+secrets.zsh
