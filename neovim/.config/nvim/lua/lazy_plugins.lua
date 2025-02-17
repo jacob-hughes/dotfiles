@@ -9,7 +9,9 @@ end
 return {
 	{ "rebelot/kanagawa.nvim", config = get_setup("kanagawa"), priority = 1000, lazy = false },
 	{ "stevearc/oil.nvim", event = "VeryLazy", config = get_setup("oil") },
-	{  'airblade/vim-rooter'}, -- Change the root directory when opening a file
+    { "airblade/vim-rooter"}, -- Change the root directory when opening a file
+    { "ntpeters/vim-better-whitespace"}, -- Red highlight for trailing whitespace
+    { "alexghergh/nvim-tmux-navigation", config = get_setup("nvim-tmux-navigation")},
 	{ "numToStr/Comment.nvim", lazy = false, config = get_setup("comment") },
 
 	{
