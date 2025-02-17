@@ -6,47 +6,19 @@ function get_setup(name)
   end
 end
 
-return {
+local required_plugins = {
 	{ "rebelot/kanagawa.nvim", config = get_setup("kanagawa"), priority = 1000, lazy = false },
 	{ "stevearc/oil.nvim", event = "VeryLazy", config = get_setup("oil") },
     { "airblade/vim-rooter"}, -- Change the root directory when opening a file
     { "ntpeters/vim-better-whitespace"}, -- Red highlight for trailing whitespace
     { "alexghergh/nvim-tmux-navigation", config = get_setup("nvim-tmux-navigation")},
 	{ "numToStr/Comment.nvim", lazy = false, config = get_setup("comment") },
-
 	{
 		"folke/which-key.nvim",
 		config = get_setup("which-key"),
 		event = "VeryLazy",
 	},
 	{ "brenoprata10/nvim-highlight-colors", config = get_setup("highlight-colors") },
-	{
-		"nvim-treesitter/nvim-treesitter",
-		config = get_setup("treesitter"),
-		build = ":TSUpdate",
-		event = "BufReadPost",
-	},
-	{   "nvim-treesitter/nvim-treesitter-textobjects"}, -- Extra stuff for treesitter
-	{   "stevearc/conform.nvim",
-		event = { "BufWritePre" },
-		cmd = { "ConformInfo" },
-		config = get_setup("conform"),
-	},
-    { "folke/neoconf.nvim" },
-  {
-    "folke/snacks.nvim",
-    priority = 1000,
-    lazy = false,
-    opts = get_setup("snacks"),
-  },
-	{
-		"saghen/blink.cmp",
-		lazy = false, -- lazy loading handled internally
-		-- optional: provides snippets for the snippet source
-		dependencies = "rafamadriz/friendly-snippets",
-		version = "v0.5.1",
-		opts = require("plugins.blink"),
-	},
 	{
 		"lewis6991/gitsigns.nvim",
 		event = "BufReadPre",
@@ -57,26 +29,7 @@ return {
 		config = get_setup("lualine"),
 		event = "VeryLazy",
 	},
-	{
-		"neovim/nvim-lspconfig",
-		config = get_setup("lsp"),
-		dependencies = { "saghen/blink.cmp" },
-	},
-	{
-		'mrcjkb/rustaceanvim',
-		version = '^5', -- Recommended
-		lazy = false, -- This plugin is already lazy
-	},
-	{ "williamboman/mason.nvim", config = function()
-		require("mason").setup()
-	end,
-	},
-	{
-		"williamboman/mason-lspconfig.nvim",
-		config = get_setup("mason-lspconfig"),
-
-	},
-    { "rcarriga/nvim-notify", config = get_setup("notify") },
+	   { "rcarriga/nvim-notify", config = get_setup("notify") },
 	{
 		"ibhagwan/fzf-lua",
 		-- optional for icon support
@@ -98,4 +51,69 @@ return {
 			require("nvim-surround").setup()
 		end,
 	},
+    {
+        "folke/snacks.nvim",
+        priority = 1000,
+        lazy = false,
+        opts = get_setup("snacks"),
+    },
 }
+--
+local full_plugins = {
+	{
+		"nvim-treesitter/nvim-treesitter",
+		config = get_setup("treesitter"),
+		build = ":TSUpdate",
+		event = "BufReadPost",
+	},
+	{   "nvim-treesitter/nvim-treesitter-textobjects"}, -- Extra stuff for treesitter
+	{   "stevearc/conform.nvim",
+		event = { "BufWritePre" },
+		cmd = { "ConformInfo" },
+		config = get_setup("conform"),
+	},
+    { "folke/neoconf.nvim" },
+    {
+        "saghen/blink.cmp",
+        lazy = false, -- lazy loading handled internally
+        -- optional: provides snippets for the snippet source
+        dependencies = "rafamadriz/friendly-snippets",
+        version = "v0.5.1",
+        opts = require("plugins.blink"),
+    },
+    {
+        "neovim/nvim-lspconfig",
+        config = get_setup("lsp"),
+        dependencies = { "saghen/blink.cmp" },
+    },
+    {
+        'mrcjkb/rustaceanvim',
+        version = '^5', -- Recommended
+        lazy = false, -- This plugin is already lazy
+    },
+    { "williamboman/mason.nvim", config = function()
+        require("mason").setup()
+    end,
+    },
+    {
+        "williamboman/mason-lspconfig.nvim",
+        config = get_setup("mason-lspconfig"),
+
+    },
+}
+
+local all_plugins = {}
+
+-- Add all plugins from required_plugins
+for _, plugin in ipairs(required_plugins) do
+    table.insert(all_plugins, plugin)
+end
+
+if not minimal_config then
+    -- Add all plugins from full_plugins
+    for _, plugin in ipairs(full_plugins) do
+        table.insert(all_plugins, plugin)
+    end
+end
+
+return all_plugins
