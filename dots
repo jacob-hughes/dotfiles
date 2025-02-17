@@ -9,6 +9,7 @@ DEPS="tmux zsh git tig curl stow"
 BASE_DOTS="neovim tmux zsh git tig"
 MAC_DOTS="mac"
 LINUX_DOTS="linux"
+export ZDOTDIR=${ZDOTDIR:-$HOME/.config/zsh}
 
 # Utility functions
 success() { printf "\e[32m[SUCCESS]\e[0m %s\n" "$1"; }
