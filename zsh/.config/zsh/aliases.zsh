@@ -23,6 +23,7 @@ alias ze="$EDITOR ~/.config/zsh/.zshenv"
 alias zf="$EDITOR ~/.config/zsh/zfuncs"
 
 alias vc="$EDITOR ~/dotfiles/neovim/.config/nvim/init.lua"
+alias tmc="$EDITOR ~/.tmux.conf"
 
 reload_fns() {
     for f in $ZDOTDIR/zfuncs/*; do
