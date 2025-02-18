@@ -1,7 +1,10 @@
 # Path configurations
-export PATH="/opt/neovim/bin:$PATH"
+export PATH="$HOME/.local/bin/neovim/bin:$PATH" # Local neovim
 export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.fzf/bin:$PATH" # FZF
+export PATH="$HOME/.cargo/bin:$PATH" # Rust
+export PATH="/opt/neovim/bin:$PATH" # Global neovim
 
 # Platform specific
 if [[ "$OSTYPE" == "darwin"* ]]; then

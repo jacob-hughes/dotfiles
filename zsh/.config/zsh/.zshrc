@@ -38,12 +38,13 @@ else
 fi
 
 # fzf
-if [ -f ~/.fzf ]; then
+if [ ! -d ~/.fzf ]; then
   git clone --depth=1 https://github.com/junegunn/fzf.git ~/.fzf
-  ~/.fzf/install --no-bash --no-fish --no-update-rc --completion
+  ~/.fzf/install --no-bash --no-fish --no-update-rc --completion --key-bindings --xdg
 fi
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config}"/fzf/fzf.zsh ] && \
+    source "${XDG_CONFIG_HOME:-$HOME/.config}"/fzf/fzf.zsh
 
 # Machine specific environment variables
 [ -f ~/.config/zsh/untracked-envs.zsh ] && \

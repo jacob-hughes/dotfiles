@@ -117,10 +117,10 @@ install_dots() {
 
                 read -p "Use minimal nvim config? [y/N]:" r
                 if [[ -z "$r" || "$r" == "n" || "$r" != "y" ]]; then
-                    echo "export NVIM_MINIMAL=false" >> $ZDOTDIR/untracked-envs.zsh
+                    echo "export NVIM_MINIMAL=false" >> $DOTFILES_DIR/zsh/.config/zsh/untracked-envs.zsh
                     success "Installed full nvim config setup"
                 else
-                    echo "export NVIM_MINIMAL=true" >> $ZDOTDIR/untracked-envs.zsh
+                    echo "export NVIM_MINIMAL=true" >> $DOTFILES_DIR/zsh/.config/zsh/untracked-envs.zsh
                     success "Installed minimal nvim config setup"
                 fi
                 info "This can be changed with the "NVIM_MINIMAL" environment variable."
