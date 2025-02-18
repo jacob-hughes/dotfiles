@@ -18,17 +18,10 @@ HISTFILE=~/.config/zsh/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
 
-git_prompt_info() {
-  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    local branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null)
-    echo "%{%F{green}%}$branch%{%f%}"
-  fi
-}
 
 # Set the prompt
-PS1='%{%F{blue}%}%~%{%f%} $(git_prompt_info)
-%{%F{%(?.green.red)}%}>%{%f%}'
-
+PROMPT='%{%F{blue}%}%~%{%f%}
+%F{%(?.green.red)}›%f '
 # Load custom functions
 autoload -z edit ineachdir lspath reset_broken_term
 
