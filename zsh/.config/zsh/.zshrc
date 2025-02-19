@@ -53,8 +53,8 @@ FTABDIR="$ZDOTDIR/fzf-tab"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-[ -f "$FZFDIR"/fzf-tab.plugin.zsh ] && \
-    source "$FZFDIR"/fzf-tab.plugin.zsh
+[ -f "$FTABDIR"/fzf-tab.plugin.zsh ] && \
+    source "$FTABDIR"/fzf-tab.plugin.zsh
 
 # Machine specific environment variables
 [ -f ~/.config/zsh/untracked-envs.zsh ] && \
