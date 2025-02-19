@@ -13,11 +13,13 @@ setopt PROMPT_SUBST
 setopt SHARE_HISTORY
 unsetopt menu_complete
 
+# Initialize completion system
+autoload -Uz compinit && compinit
+
 # History
 HISTFILE=~/.config/zsh/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
-
 
 # Set the prompt
 PROMPT='%{%F{blue}%}%~%{%f%}
@@ -28,23 +30,31 @@ autoload -z edit ineachdir lspath reset_broken_term
 # Aliases
 source ~/.config/zsh/aliases.zsh
 
-# Auto-suggestions
-if [ -f ~/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
-  source ~/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-else
-  git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions \
-      ~/.config/zsh/zsh-autosuggestions
-  source ~/.config/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-fi
+ZDOTDIR="${ZDOTDIR:-$HOME/.config/zsh}"
+ASDIR="$ZDOTDIR/zsh-autosuggestions"
+FZFDIR="$HOME/.fzf"
+FTABDIR="$ZDOTDIR/fzf-tab"
+
+# auto-suggestions
+[ -d $ASDIR ] || \
+    git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions $ASDIR
 
 # fzf
-if [ ! -d ~/.fzf ]; then
-  git clone --depth=1 https://github.com/junegunn/fzf.git ~/.fzf
-  ~/.fzf/install --no-bash --no-fish --no-update-rc --completion --key-bindings --xdg
-fi
+[ -d $FZFDIR ] || \
+  (git clone --depth=1 https://github.com/junegunn/fzf.git $FZFDIR && \
+  $FZFDIR/install --no-bash --no-fish --no-update-rc --completion --key-bindings)
 
-[ -f "${XDG_CONFIG_HOME:-$HOME/.config}"/fzf/fzf.zsh ] && \
-    source "${XDG_CONFIG_HOME:-$HOME/.config}"/fzf/fzf.zsh
+# fzf-tab (tab autocompletions using fzf)
+[ -d $FTABDIR ] || \
+    git clone --depth=1 https://github.com/Aloxaf/fzf-tab.git $FTABDIR
+
+[ -f "$ASDIR"/zsh-autosuggestions.zsh ] && \
+    source "$ASDIR"/zsh-autosuggestions.zsh
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+[ -f "$FZFDIR"/fzf-tab.plugin.zsh ] && \
+    source "$FZFDIR"/fzf-tab.plugin.zsh
 
 # Machine specific environment variables
 [ -f ~/.config/zsh/untracked-envs.zsh ] && \

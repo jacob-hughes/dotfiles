@@ -1,5 +1,4 @@
 # Path configurations
-export PATH="$HOME/.local/bin/neovim/bin:$PATH" # Local neovim
 export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.fzf/bin:$PATH" # FZF
@@ -13,7 +12,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 	# Disable telemetry
 	export HOMEBREW_NO_ANALYTICS=1
 fi
-
 
 # XDG Base Directory
 export XDG_CONFIG_HOME="$HOME/.config"
@@ -36,6 +34,3 @@ else
 	export EDITOR="vi"
 	export VISUAL="vi"
 fi
-
-echo "PATH after .zshenv: $PATH" >> /tmp/path_debug.log
-
