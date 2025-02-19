@@ -1,7 +1,6 @@
-no-p10k-installer
 zsh-autosuggestions/
+fzf-tab/
 .zsh_history
-p10k/
-.p10k.zsh
 secrets.zsh
 untracked-envs.zsh
+.zcompdump
