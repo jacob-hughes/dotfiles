@@ -70,8 +70,6 @@ install_deps() {
     fi
     $PKG_UPDATE
     $PKG_INSTALL $DEPS
-
-    chsh -s $(which zsh)
 }
 
 install_neovim() {
@@ -202,6 +200,17 @@ check() {
     fi
 }
 
+test() {
+    info "Creating fresh debian docker container ..."
+    info "GIT_FLAG: $GIT_FLAG"
+    (cd $DOTFILES_DIR && docker run --rm -it $(docker build --build-arg GIT_ONLY="$GIT_FLAG" -q .))
+    if [ $? -eq 0 ]; then
+        info "Container destroyed."
+    else
+        error "Test failed."
+    fi
+}
+
 update() {
     error "'$0 update' not yet implemented."
 }
@@ -213,6 +222,9 @@ usage() {
     echo "  install   Install dots from scratch."
     echo "  check     Ensure dots are in sync with remote."
     echo "  update    Pull dots from remote and update any deps built from source."
+    echo "  test      Spin up a fresh debian docker image and test the install process."
+    echo "    Options:"
+    echo "      --git    test only using files checked into git."
     echo
     echo "Options:"
     echo "  -h, --help   Show this help message and exit."
@@ -236,6 +248,24 @@ main() {
             ;;
         update)
             update
+            ;;
+        test)
+            shift
+            GIT_FLAG=false
+            while [[ $# -gt 0 ]]; do
+                case "$1" in
+                    --git)
+                        GIT_FLAG=true
+                        shift
+                        ;;
+                    *)
+                        echo "Error: Unknown option for test: $1"
+                        usage
+                        exit 1
+                        ;;
+                esac
+            done
+            test $GIT_FLAG
             ;;
         -h|--help)
             usage
