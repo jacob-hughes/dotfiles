@@ -48,8 +48,9 @@ vim.o.whichwrap = vim.o.whichwrap .. "<,>" -- Wrap movement between lines in edi
 opt.wrap = true
 -- opt.cc = "80"
 opt.mouse = "a"
-opt.guicursor = "n-v-c-sm:block-nCursor-blinkwait50-blinkon50-blinkoff50,i-ci-ve:ver25-Cursor-blinkon100-blinkoff100,r-cr-o:hor20"
-vim.notify = require("notify")
+opt.guicursor =
+	"n-v-c-sm:block-nCursor-blinkwait50-blinkon50-blinkoff50,i-ci-ve:ver25-Cursor-blinkon100-blinkoff100,r-cr-o:hor20"
+-- vim.notify = require("notify")
 opt.jumpoptions = "view"
 opt.timeoutlen = 300 -- The time before a key sequence should complete
 opt.cpoptions:append(">") -- when you yank multiple times into a register, this puts each on a new line
@@ -62,46 +63,46 @@ local api = vim.api
 -- Highlight on yank
 local yankGrp = vim.api.nvim_create_augroup("YankHighlight", { clear = true })
 api.nvim_create_autocmd("TextYankPost", {
-  group = yankGrp,
-  pattern = "*",
-  callback = function()
-    vim.highlight.on_yank()
-  end,
-  desc = "Highlight yank",
+	group = yankGrp,
+	pattern = "*",
+	callback = function()
+		vim.highlight.on_yank()
+	end,
+	desc = "Highlight yank",
 })
 
 -- show cursor line only in active window
 local cursorGrp = api.nvim_create_augroup("CursorLine", { clear = true })
 api.nvim_create_autocmd({ "InsertLeave", "WinEnter" }, { pattern = "*", command = "set cursorline", group = cursorGrp })
 api.nvim_create_autocmd(
-  { "InsertEnter", "WinLeave" },
-  { pattern = "*", command = "set nocursorline", group = cursorGrp }
+	{ "InsertEnter", "WinLeave" },
+	{ pattern = "*", command = "set nocursorline", group = cursorGrp }
 )
 -- show cursor col line only in active window
 local cursorColGrp = api.nvim_create_augroup("CursorColumn", { clear = true })
 api.nvim_create_autocmd(
-  { "InsertLeave", "WinEnter" },
-  { pattern = "*", command = "set cursorcolumn", group = cursorColGrp }
+	{ "InsertLeave", "WinEnter" },
+	{ pattern = "*", command = "set cursorcolumn", group = cursorColGrp }
 )
 api.nvim_create_autocmd(
-  { "InsertEnter", "WinLeave" },
-  { pattern = "*", command = "set nocursorcolumn", group = cursorColGrp }
+	{ "InsertEnter", "WinLeave" },
+	{ pattern = "*", command = "set nocursorcolumn", group = cursorColGrp }
 )
 
 -- auto-reload files when modified externally
 -- https://unix.stackexchange.com/a/383044
 vim.o.autoread = true
 vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "CursorHoldI", "FocusGained" }, {
-  command = "if mode() != 'c' | checktime | endif",
-  pattern = { "*" },
+	command = "if mode() != 'c' | checktime | endif",
+	pattern = { "*" },
 })
 
 -- This is global settings for diagnostics
 vim.o.updatetime = 250
 vim.diagnostic.config({
-  virtual_text = false,
-  signs = true,
-  underline = true,
-  update_in_insert = false,
-  severity_sort = false,
+	virtual_text = false,
+	signs = true,
+	underline = true,
+	update_in_insert = false,
+	severity_sort = false,
 })
