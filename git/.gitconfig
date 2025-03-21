@@ -5,6 +5,14 @@
 [core]
     excludesfile=~/.gitignore-global
     autocrlf = input
+    pager = delta
+[interactive]
+    diffFilter = delta --color-only
+[delta]
+    navigate = true
+    dark = true
+[merge]
+    conflictstyle = zdiff3
 [pull]
     rebase = true
 [gpg]
@@ -18,3 +26,4 @@
 [alias]
     wc = ! git diff --word-diff=porcelain | grep -e '^+[^-]' | wc -w
     sed = ! git grep -z --full-name -l '.' | xargs -0 sed -i -e
+    search = '! ~/bin/git-search'
