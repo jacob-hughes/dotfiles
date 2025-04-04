@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# Usage and description
+if [ "$#" -eq 0 ]; then
+    echo "Usage: cs PATTERN"
+    exit 0
+fi
+
+TMUXV_COMPATIBLE=$(tmux -V | awk -F'[ .]' '{if ($2 > 3 || ($2 == 3 && $3 >= 1)) print "true"; else print "false"}')
+USE_TMUX=${TMUX:+${TMUXV_COMPATIBLE:+true}}
+
+FZF_PREVIEW="--preview 'bat --style=header,changes,numbers --color=always --highlight-line {2} {1}'"
+FZF_BINDINGS="--bind 'ctrl-u:preview-half-page-up,ctrl-d:preview-half-page-down'"
+FZF_PREVIEW_WINDOW="--preview-window 'up,border-bottom,~1,+{2}+1/2'"
+FZF_CMD="fzf --ansi --delimiter : $FZF_PREVIEW $FZF_PREVIEW_WINDOW $FZF_BINDINGS"
+RG_CMD="rg --glob '!**/submodules/**' --color=ansi --line-number --no-heading $@"
+
+tmpfile=$(mktemp)
+if [ -n "$USE_TMUX" ]; then
+    tmux display-popup -T "#[align=centre]Code Search" -w 80% -h 80% -E "cd $PWD && $RG_CMD | $FZF_CMD > $tmpfile"
+else
+    eval "$RG_CMD | $FZF_CMD > $tmpfile"
+fi
+
+# Process the selection
+IFS=: read -r file line _ <"$tmpfile"
+rm $tmpfile
+
+if [[ -f "$file" ]]; then
+    if [[ -n $line && $line =~ ^[0-9]+$ ]]; then
+        nvim "$file" +"$line"
+    else
+        nvim "$file"
+    fi
+else
+    echo "Error: File not found: '$file'"
+    echo "Current directory: $(pwd)"
+fi
