@@ -1,0 +1,2 @@
+set main-view-commit-title-graph = no
+bind generic Y !@zsh -c "echo -n %(commit) | pbcopy"
