@@ -1,0 +1,554 @@
+#!/usr/bin/env bash
+
+CONFIG_FILE_NAME="tmux-sessionizer.conf"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/tmux-sessionizer"
+CONFIG_FILE="$CONFIG_DIR/$CONFIG_FILE_NAME"
+PANE_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/tmux-sessionizer"
+PANE_CACHE_FILE="$PANE_CACHE_DIR/panes.cache"
+REMOTES_CACHE_FILE="$PANE_CACHE_DIR/remotes.cache"
+REMOTES_CACHE_SIZE=10
+
+TS_LOG=true # can be overridden in config
+VERSION="0.1.0"
+
+SSH_HOSTS=()
+TS_SEARCH_PATHS=()
+TS_EXTRA_SEARCH_PATHS=()
+
+session_idx=""
+session_cmd=""
+user_selected=""
+split_type=""
+local_mode=""
+no_attach=""
+selected=""
+
+# config file example
+# ------------------------
+# # file: ~/.config/tmux-sessionizer/tmux-sessionizer.conf
+# # If set this override the default TS_SEARCH_PATHS (~/ ~/personal ~/personal/dev/env/.config)
+# TS_SEARCH_PATHS=(~/)
+# # If set this add additional search paths to the default TS_SEARCH_PATHS
+# # The number prefix is the depth for the Path [OPTIONAL]
+# TS_EXTRA_SEARCH_PATHS=(~/ghq:3 ~/Git:3 ~/.config:2)
+# # if set this override the TS_MAX_DEPTH (1)
+# TS_MAX_DEPTH=2
+# This is not meant to override .tmux-sessionizer.  At first i thought this
+# would be a good command, but i don't think its ackshually what i want.
+#
+# Instead, its a list of commands to run on windows who's index is way outside
+# of the first 10 windows.  This allows you to create as many windows in your
+# session as you would like without having your workflow interrupted by these
+# programatic windows
+#
+# how to use:
+# tmux-sessionizer -w 0 will execute the first command in window -t 69.
+# TS_SESSION_COMMANDS=(<cmd1> <cmd2>)
+#
+# TS_LOG=true # will write logs to ~/.local/share/tmux-sessionizer/tmux-sessionizer.logs
+# TS_LOG_FILE=<file> # will write logs to <file> Defaults to ~/.local/share/tmux-sessionizer/tmux-sessionizer.logs
+# ------------------------
+
+load_config() {
+    if [[ -f "$CONFIG_FILE" ]]; then
+        # shellcheck disable=SC1090
+        source "$CONFIG_FILE"
+    fi
+
+    if [[ -f "$CONFIG_FILE_NAME" ]]; then
+        # shellcheck disable=SC1090
+        source "$CONFIG_FILE_NAME"
+    fi
+}
+
+setup_logging() {
+    if [[ ${TS_LOG:-} == "true" ]]; then
+        if [[ -z ${TS_LOG_FILE:-} ]]; then
+            TS_LOG_FILE="$HOME/.local/share/tmux-sessionizer/tmux-sessionizer.logs"
+        fi
+        mkdir -p "$(dirname "$TS_LOG_FILE")"
+    fi
+}
+
+log() {
+    if [[ ${TS_LOG:-} == "true" ]]; then
+        echo "$*" >>"$TS_LOG_FILE"
+    elif [[ ${TS_LOG:-} == "echo" ]]; then
+        echo "$*"
+    fi
+}
+
+cache_remote() {
+    mkdir -p "$(dirname "$REMOTES_CACHE_FILE")"
+    echo "$1" >>"$REMOTES_CACHE_FILE"
+}
+
+usage() {
+    cat <<EOF
+Usage: tmux-sessionizer [OPTIONS] [SEARCH_PATH]
+
+Options:
+  -h, --help             Display this help message
+  -s, --session <index>  session command index.
+      --vsplit           Create vertical split for session command
+      --hsplit           Create horizontal split for session command
+      --local            Show SSH hosts as well as directories
+      --no-attach        Print session-name instead of attaching
+  -v, --version          Show version and exit
+EOF
+}
+
+parse_args() {
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            -h|--help)
+                usage
+                exit 0
+                ;;
+            -s|--session)
+                session_idx="${2:-}"
+                if [[ -z $session_idx ]]; then
+                    echo "Session index cannot be empty" >&2
+                    exit 1
+                fi
+
+                if [[ -z ${TS_SESSION_COMMANDS+x} ]]; then
+                    echo "TS_SESSION_COMMANDS is not set. Must have a command set to run when switching to a session" >&2
+                    exit 1
+                fi
+
+                if [[ "$session_idx" -lt 0 || "$session_idx" -ge "${#TS_SESSION_COMMANDS[@]}" ]]; then
+                    echo "Error: Invalid index. Please provide an index between 0 and $((${#TS_SESSION_COMMANDS[@]} - 1))." >&2
+                    exit 1
+                fi
+
+                session_cmd="${TS_SESSION_COMMANDS[$session_idx]}"
+                shift
+                ;;
+            --local)
+                local_mode="true"
+                ;;
+            --no-attach)
+                no_attach="true"
+                ;;
+            --vsplit)
+                split_type="vsplit"
+                ;;
+            --hsplit)
+                split_type="hsplit"
+                ;;
+            -v|--version)
+                echo "tmux-sessionizer version $VERSION"
+                exit 0
+                ;;
+            *)
+                user_selected="$1"
+                ;;
+        esac
+        shift
+    done
+}
+
+validate_split_options() {
+    if [[ -n "$split_type" && -z "$session_idx" ]]; then
+        echo "Error: --vsplit and --hsplit can only be used with -s/--session option" >&2
+        exit 1
+    fi
+}
+
+sanity_check() {
+    if ! command -v tmux &>/dev/null; then
+        echo "tmux is not installed. Please install it first."
+        exit 1
+    fi
+
+    if ! command -v fzf &>/dev/null; then
+        echo "fzf is not installed. Please install it first."
+        exit 1
+    fi
+}
+
+switch_to() {
+    if [[ "$no_attach" == true ]]; then
+        tmux display-message -p -t "$1:" 'session-dir:#{pane_current_path}'
+        return 0
+    fi
+
+    if [[ -z ${TMUX:-} ]]; then
+        log "attaching to session: $1"
+        tmux attach-session -t "$1"
+    else
+        log "switching to session: $1"
+        tmux switch-client -t "$1"
+    fi
+}
+
+has_session() {
+    tmux list-sessions | grep -q "^$1:"
+}
+
+hydrate() {
+    if [[ -n $session_cmd ]]; then
+        log "skipping hydrate for $1 -- using \"$session_cmd\" instead"
+        return
+    elif [ -f "$2/.tmux-sessionizer" ]; then
+        log "sourcing(local) $2/.tmux-sessionizer"
+        tmux send-keys -t "$1" "source $2/.tmux-sessionizer" c-M
+    elif [ -f "$HOME/.tmux-sessionizer" ]; then
+        log "sourcing(global) $HOME/.tmux-sessionizer"
+        tmux send-keys -t "$1" "source $HOME/.tmux-sessionizer" c-M
+    fi
+}
+
+is_tmux_running() {
+    tmux_running=$(pgrep tmux || true)
+
+    if [[ -z ${TMUX:-} ]] && [[ -z $tmux_running ]]; then
+        return 1
+    fi
+    return 0
+}
+
+init_pane_cache() {
+    mkdir -p "$PANE_CACHE_DIR"
+    touch "$PANE_CACHE_FILE"
+}
+
+get_pane_id() {
+    local session_idx="$1"
+    local split_type="$2"
+    init_pane_cache
+    grep "^${session_idx}:${split_type}:" "$PANE_CACHE_FILE" | cut -d: -f3
+}
+
+set_pane_id() {
+    local session_idx="$1"
+    local split_type="$2"
+    local pane_id="$3"
+    init_pane_cache
+
+    grep -v "^${session_idx}:${split_type}:" "$PANE_CACHE_FILE" >"${PANE_CACHE_FILE}.tmp" 2>/dev/null || true
+    mv "${PANE_CACHE_FILE}.tmp" "$PANE_CACHE_FILE"
+
+    echo "${session_idx}:${split_type}:${pane_id}" >>"$PANE_CACHE_FILE"
+}
+
+cleanup_dead_panes() {
+    init_pane_cache
+    local temp_file="${PANE_CACHE_FILE}.tmp"
+    : >"$temp_file"
+
+    while IFS=: read -r idx split pane_id; do
+        if tmux list-panes -a -F "#{pane_id}" 2>/dev/null | grep -q "^${pane_id}$"; then
+            echo "${idx}:${split}:${pane_id}" >>"$temp_file"
+        fi
+    done <"$PANE_CACHE_FILE"
+
+    mv "$temp_file" "$PANE_CACHE_FILE" 2>/dev/null || touch "$PANE_CACHE_FILE"
+}
+
+# if TS_SEARCH_PATHS is not set use default
+init_search_paths() {
+    # default search paths if none provided
+    if [[ ${#TS_SEARCH_PATHS[@]} -eq 0 ]]; then
+        TS_SEARCH_PATHS=(~/ ~/projects ~/personal/dev/env/.config)
+    fi
+
+    # append extras if any
+    if [[ ${#TS_EXTRA_SEARCH_PATHS[@]} -gt 0 ]]; then
+        TS_SEARCH_PATHS+=("${TS_EXTRA_SEARCH_PATHS[@]}")
+    fi
+}
+
+load_ssh_hosts() {
+    local cfg="$HOME/.ssh/config"
+    [[ -r "$cfg" ]] || return 0
+
+    SSH_HOSTS=($(cat "$cfg" | grep "Host " | cut -d " " -f 2 | sort | grep -v "\*"))
+}
+
+populate_fzf() {
+    # Sessions first
+    if tmux list-sessions &>/dev/null; then
+        if [[ -n "${TMUX:-}" ]]; then
+            current_session=$(tmux display-message -p '#S')
+            tmux list-sessions -F "#{session_name}" 2>/dev/null \
+                | grep -vFx "$current_session" \
+                | while IFS= read -r line; do
+                    # kind=SESS, visible part: [S] session-name
+                    printf "SESS\t[S] %s\n" "$line"
+                  done
+        else
+            tmux list-sessions -F "#{session_name}" 2>/dev/null \
+                | while IFS= read -r line; do
+                    printf "SESS\t[S] %s\n" "$line"
+                  done
+        fi
+    fi
+
+    if [[ "$local_mode" == true && -r "$REMOTES_CACHE_FILE" ]]; then
+        uniq "$REMOTES_CACHE_FILE" | tail -n "$REMOTES_CACHE_SIZE" | while IFS= read -r line; do
+            printf "HST\t[P] %s\n" "$line"
+        done
+    fi
+
+
+    # SSH hosts (only when --local)
+    if [[ "$local_mode" == true && ${#SSH_HOSTS[@]} -gt 0 ]]; then
+        for host in "${SSH_HOSTS[@]}"; do
+            # kind=SSH, visible part: [H] host
+            printf "SSH\t[H] %s\n" "$host"
+        done
+    fi
+
+    # Directories
+    for entry in "${TS_SEARCH_PATHS[@]}"; do
+        if [[ "$entry" =~ ^([^:]+):([0-9]+)$ ]]; then
+            path="${BASH_REMATCH[1]}"
+            depth="${BASH_REMATCH[2]}"
+        else
+            path="$entry"
+        fi
+
+        if [[ -d "$path" ]]; then
+            find "$path" \
+                -mindepth 1 \
+                -maxdepth "${depth:-${TS_MAX_DEPTH:-1}}" \
+                -path '*/.git' -prune -o -type d -print \
+                | while IFS= read -r line; do
+                    # kind=DIR, visible part: [D] /path/to/dir
+                    printf "DIR\t[D] %s\n" "$line"
+                  done
+        fi
+    done
+}
+
+handle_window_session_cmd() {
+    local current_session="$1"
+    local start_index=$((69 + session_idx))
+    local target="$current_session:$start_index"
+
+    log "target: $target command $session_cmd has-session=$(tmux has-session -t="$target" 2>/dev/null || true)"
+    if tmux has-session -t="$target" 2>/dev/null; then
+        switch_to "$target"
+    else
+        log "executing session command: tmux neww -dt $target $session_cmd"
+        tmux neww -dt "$target" "$session_cmd"
+        hydrate "$target" "$selected"
+        tmux select-window -t "$target"
+    fi
+}
+
+handle_split_session_cmd() {
+    local current_session="$1"
+    cleanup_dead_panes
+
+    local existing_pane_id
+    existing_pane_id=$(get_pane_id "$session_idx" "$split_type")
+
+    if [[ -n "$existing_pane_id" ]] && tmux list-panes -a -F "#{pane_id}" 2>/dev/null | grep -q "^${existing_pane_id}$"; then
+        log "switching to existing pane $existing_pane_id"
+        tmux select-pane -t "$existing_pane_id"
+        if [[ -z ${TMUX:-} ]]; then
+            tmux attach-session -t "$current_session"
+        else
+            tmux switch-client -t "$current_session"
+        fi
+    else
+        local split_flag=""
+        if [[ "$split_type" == "vsplit" ]]; then
+            split_flag="-h"
+        else
+            split_flag="-v"
+        fi
+
+        log "creating new split: tmux split-window $split_flag -c $(pwd) $session_cmd"
+        local new_pane_id
+        new_pane_id=$(tmux split-window $split_flag -c "$(pwd)" -P -F "#{pane_id}" "$session_cmd")
+
+        if [[ -n "$new_pane_id" ]]; then
+            set_pane_id "$session_idx" "$split_type" "$new_pane_id"
+            log "created pane $new_pane_id for session_idx=$session_idx split_type=$split_type"
+        fi
+    fi
+}
+
+handle_session_cmd() {
+    log "executing session command $session_cmd with index $session_idx split_type=$split_type"
+
+    if ! is_tmux_running; then
+        echo "Error: tmux is not running.  Please start tmux first before using session commands."
+        exit 1
+    fi
+
+    local current_session
+    current_session=$(tmux display-message -p '#S')
+
+    if [[ -n "$split_type" ]]; then
+        handle_split_session_cmd "$current_session"
+    else
+        handle_window_session_cmd "$current_session"
+    fi
+}
+
+make_outer() {
+    local session=$1
+    tmux set-option -t "$session" status off
+    tmux set-option -t "$session" pane-border-status off
+    tmux set-window-option -t "$session" pane-border-style 'fg=default,bg=default'
+    tmux set-window-option -t "$session" pane-active-border-style 'fg=default,bg=default'
+    tmux set-option -t "$session" prefix C-q
+    tmux unbind-key -T "$session" C-s
+}
+
+make_visible() {
+    local session=$1
+    tmux set-option -t "$session" -u status
+    tmux set-option -t "$session" -u pane-border-status
+    tmux set-window-option -t "$session" -u pane-border-style
+    tmux set-window-option -t "$session" -u pane-active-border-style
+}
+
+handle_remote_selection() {
+    local selected="$1"
+    local host_name="$selected"
+
+    if [[ "$host_name" =~ ^\[H\][[:space:]]+(.+)$ ]]; then
+        host_name="${BASH_REMATCH[1]}"
+    fi
+
+    log "remote host: $host_name"
+
+    local tmp
+    tmp=$(mktemp)
+    ssh "$host_name" -t "tmux-sessionizer --no-attach" | tee "$tmp"
+    local remote_session
+    remote_dir=$(awk -F'session-dir:' '{print $NF}' "$tmp" | tr -d '[:space:]')
+    remote_session=$(basename "$remote_dir" | tr . _)
+
+    local local_session="ssh-$host_name-$remote_session"
+    tmux new-session -ds "$local_session" -c "$HOME" \
+        "ssh '$host_name' -t 'tmux -u a -t $remote_session || tmux -u a'; tmux kill-session -t $local_session"
+    make_outer "$local_session"
+    cache_remote "$host_name:$remote_dir"
+    log "Remote session: $remote_session"
+    log "local session: $local_session"
+    rm -f "$tmp"
+    switch_to "$local_session"
+}
+
+handle_history_selection() {
+    local selected="$1"
+    if [[ "$selected" =~ ^\[P\][[:space:]]+(.+)$ ]]; then
+        selected="${BASH_REMATCH[1]}"
+    fi
+    local host_name=$(cut -d ':' -f1 <<< "$selected")
+    local remote_dir=$(cut -d ':' -f2 <<< "$selected")
+
+    log "History selection"
+    log "remote host: $host_name"
+
+    remote_session=$(basename "$remote_dir" | tr . _)
+
+    local local_session="ssh-$host_name-$remote_session"
+    local cmd="ssh \"$host_name\" -t \"tmux -u a -t $remote_session || tmux new-session -s $remote_session -u\"; tmux kill-session -t \"$local_session\""
+    tmux new-session -ds "$local_session" -c "$HOME" "$cmd"
+
+    make_outer "$local_session"
+    cache_remote "$host_name:$remote_dir"
+    log "Remote session: $remote_session"
+    log "local session: $local_session"
+    switch_to "$local_session"
+}
+
+handle_tmux_session_selection() {
+    local display="$1"
+    local session_name="$display"
+
+    if [[ "$display" =~ ^\[S\][[:space:]]+(.+)$ ]]; then
+        session_name="${BASH_REMATCH[1]}"
+    fi
+
+    switch_to "$session_name"
+}
+
+handle_local_selection() {
+    local selected="$1"
+
+    if [[ "$selected" =~ ^\[D\][[:space:]]+(.+)$ ]]; then
+        selected="${BASH_REMATCH[1]}"
+    fi
+
+    local selected_name
+    selected_name=$(basename "$selected" | tr . _)
+
+    if ! is_tmux_running; then
+        tmux new-session -ds "$selected_name" -c "$selected"
+        hydrate "$selected_name" "$selected"
+    elif ! has_session "$selected_name"; then
+        tmux new-session -ds "$selected_name" -c "$selected"
+        hydrate "$selected_name" "$selected"
+    fi
+
+    switch_to "$selected_name"
+}
+
+main() {
+    load_config
+    load_ssh_hosts
+    setup_logging
+    parse_args "$@"
+    sanity_check
+    init_search_paths
+    validate_split_options
+
+    log "tmux-sessionizer($VERSION): idx=$session_idx cmd=$session_cmd user_selected=$user_selected split_type=$split_type log=$TS_LOG log_file=$TS_LOG_FILE"
+
+    # session command mode: bypass fzf
+    if [[ -n $session_cmd ]]; then
+        handle_session_cmd
+        exit 0
+    fi
+
+    # explicit argument (likely a directory): bypass fzf
+    if [[ -n $user_selected ]]; then
+        handle_local_selection "$user_selected"
+        exit 0
+    fi
+
+    # interactive selection with typed lines
+    selected=$(populate_fzf | fzf \
+        --ansi \
+        --with-nth=2.. \
+        --delimiter=$'\t' \
+        --header='[S] session  [P] prev. session  [H] ssh host  [D] directory' \
+        --prompt="> ")
+
+    if [[ -z ${selected:-} ]]; then
+        exit 0
+    fi
+
+    kind=${selected%%$'\t'*}
+    value=${selected#*$'\t'}
+
+    case "$kind" in
+        HDR)
+            # header or spacer selected: do nothing
+            exit 0
+            ;;
+        SSH)
+            handle_remote_selection "$value"
+            ;;
+        HST)
+            handle_history_selection "$value"
+            ;;
+        SESS)
+            handle_tmux_session_selection "$value"
+            ;;
+        DIR|*)
+            handle_local_selection "$value"
+            ;;
+    esac
+}
+
+main "$@"
