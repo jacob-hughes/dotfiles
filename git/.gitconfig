@@ -1,0 +1,21 @@
+[user]
+    email = jh@jakehughes.uk
+    name = Jake Hughes
+    signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOTtDikzxCMdukrZBJ1eziJZ1cmWNeTu7OZ9DXf2KH9G
+[core]
+    excludesfile=~/.gitignore-global
+    autocrlf = input
+[merge]
+    conflictstyle = zdiff3
+[pull]
+    rebase = true
+[gpg]
+    format = ssh
+[commit]
+    gpgsign = true
+[tag]
+    gpgsign = true
+[alias]
+    wc = ! git diff --word-diff=porcelain | grep -e '^+[^-]' | wc -w
+    sed = ! git grep -z --full-name -l '.' | xargs -0 sed -i -e
+    search = '! ~/bin/git-search'
