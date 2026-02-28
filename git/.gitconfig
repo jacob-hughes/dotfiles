@@ -2,9 +2,12 @@
     email = jh@jakehughes.uk
     name = Jake Hughes
     signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOTtDikzxCMdukrZBJ1eziJZ1cmWNeTu7OZ9DXf2KH9G
+[includeIf "gitdir:~/work/"]
+    path = ~/.gitconfig-work
 [core]
     excludesfile=~/.gitignore-global
     autocrlf = input
+    hooksPath = ~/.hooks
 [merge]
     conflictstyle = zdiff3
 [pull]
