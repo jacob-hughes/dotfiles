@@ -58,6 +58,7 @@ automatically-unhide-macos-hidden-apps = true
     alt-1 = ['exec-and-forget open -a Ghostty --args --maximize --title=1','workspace 1']
     alt-2 = ['exec-and-forget open -a Chrome', 'workspace 2']
     alt-3 = 'workspace 3'
+    alt-4 = ["exec-and-forget open -a 'Google Chat'", 'workspace 4']
     alt-5 = 'workspace 5'
 
     alt-m = ['exec-and-forget open -a "Bitwig Studio"', 'workspace m']
