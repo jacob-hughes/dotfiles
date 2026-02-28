@@ -1,9 +1,3 @@
-[user]
-    email = jh@jakehughes.uk
-    name = Jake Hughes
-    signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOTtDikzxCMdukrZBJ1eziJZ1cmWNeTu7OZ9DXf2KH9G
-[includeIf "gitdir:~/work/"]
-    path = ~/.gitconfig-work
 [core]
     excludesfile=~/.gitignore-global
     autocrlf = input
@@ -12,15 +6,13 @@
     conflictstyle = zdiff3
 [pull]
     rebase = true
-[gpg]
-    format = ssh
-[commit]
-    gpgsign = true
-[tag]
-    gpgsign = true
 [alias]
     wip = ! git add -u && git commit -m "WIP"
     wc = ! git diff --word-diff=porcelain | grep -e '^+[^-]' | wc -w
     sed = ! git grep -z --full-name -l '.' | xargs -0 sed -i -e
     search = '! ~/bin/git-search'
     recent = branch --sort=-committerdate
+[include]
+    path = ~/.gitconfig-personal
+[include]
+    path = ~/.gitconfig-work

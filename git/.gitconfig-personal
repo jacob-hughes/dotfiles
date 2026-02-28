@@ -1,0 +1,10 @@
+[user]
+    name = Jake Hughes
+    email = jh@jakehughes.uk
+    signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOTtDikzxCMdukrZBJ1eziJZ1cmWNeTu7OZ9DXf2KH9G
+[gpg]
+    format = ssh
+[commit]
+    gpgsign = true
+[tag]
+    gpgsign = true

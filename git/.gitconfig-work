@@ -1,7 +1,0 @@
-[user]
-    email = jhughes@cloudflare.com
-    name = Jake Hughes
-[commit]
-    gpgsign = false
-[tag]
-    gpgsign = false
