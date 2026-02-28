@@ -19,6 +19,7 @@
 [tag]
     gpgsign = true
 [alias]
+    wip = ! git add -u && git commit -m "WIP"
     wc = ! git diff --word-diff=porcelain | grep -e '^+[^-]' | wc -w
     sed = ! git grep -z --full-name -l '.' | xargs -0 sed -i -e
     search = '! ~/bin/git-search'
