@@ -56,6 +56,7 @@ export VISUAL="nvim"
 export PAGER="less"
 export TERM=xterm-256color
 
+export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
 export FZF_DEFAULT_COMMAND='rg --files'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
