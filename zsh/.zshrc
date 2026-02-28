@@ -118,6 +118,7 @@ alias gre='git reset'
 alias grt='cd $(git rev-parse --show-toplevel)'
 # Editing config files
 alias zc="$EDITOR ~/.config/zsh/.zshrc"
+alias j='just --justfile .jake/justfile --working-directory .'
 
 # Key bindings
 bindkey -e
