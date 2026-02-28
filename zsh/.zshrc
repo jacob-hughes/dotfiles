@@ -97,6 +97,8 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
   alias du='du -h -d 1'
 fi
 
+alias ls='ls -lAh --color=auto'
+
 # Git aliases
 alias g="git status"
 alias gc="git commit -m"
