@@ -23,7 +23,7 @@ HISTSIZE=10000
 SAVEHIST=10000
 
 # Set the prompt
-PROMPT='%{%F{blue}%}%~%{%f%}$(git branch --show-current 2>/dev/null | sed "s/.\+/ %{%F{242}%}· &%{%f%}/")
+PROMPT='%{%F{blue}%}%~%{%f%}$(git branch --show-current 2>/dev/null | sed "s/.*/ %{%F{242}%}· &%{%f%}/")
 %F{%(?.green.red)}›%f '
 
 # Path configurations
