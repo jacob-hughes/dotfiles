@@ -91,6 +91,8 @@ zstyle ':completion:*:cat:*:*' ignored-patterns '(*.o|*.so|*.bin|*.pdf|*.png|*.w
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   alias open="xdg-open"
   alias du='du -h --max-depth=1'
+  alias pbcopy='xclip -selection clipboard'
+  alias pbpaste='xclip -selection clipboard -o'
 # MacOS
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   alias du='du -h -d 1'
