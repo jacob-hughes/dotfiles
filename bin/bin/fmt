@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+usage() {
+    echo "usage: git diff --name-only HEAD | $(basename "$0") [--check] [--silent]"
+    exit 1
+}
+
+CHECK=0
+SILENT=0
+
+for arg in "$@"; do
+    case "$arg" in
+        --check)  CHECK=1 ;;
+        --silent) SILENT=1 ;;
+        --help)   usage ;;
+        *)        usage ;;
+    esac
+done
+
+declare -A FORMATTERS
+FORMATTERS=(
+    [rs]="rustfmt"
+    [lua]="stylua"
+    [py]="isort black"
+    [sh]="shfmt"
+    [c]="clang-format"
+    [cpp]="clang-format"
+    [h]="clang-format"
+    [hpp]="clang-format"
+)
+
+declare -A CHECK_FLAGS
+CHECK_FLAGS=(
+    [rustfmt]="--check"
+    [stylua]="--check"
+    [black]="--check"
+    [isort]="--check"
+    [shfmt]="-l"
+    [clang-format]="--dry-run --Werror"
+)
+
+warn() { [ "$SILENT" -eq 0 ] && echo "warn: $*" >&2; }
+
+failed=()
+
+format_file() {
+    local file="$1"
+    local ext="${file##*.}"
+    local formatters="${FORMATTERS[$ext]}"
+
+    [ -z "$formatters" ] && return 0
+
+    for fmt in $formatters; do
+        if ! command -v "$fmt" >/dev/null 2>&1; then
+            warn "$fmt is not installed"
+            continue
+        fi
+
+        if [ "$CHECK" -eq 1 ]; then
+            # shfmt -l prints unformatted filenames to stdout; exit code is reliable
+            # shellcheck disable=SC2086
+            if ! "$fmt" ${CHECK_FLAGS[$fmt]} "$file" >/dev/null 2>&1; then
+                failed+=("$file")
+                return 1
+            fi
+        else
+            "$fmt" "$file"
+        fi
+    done
+}
+
+while IFS= read -r file; do
+    [ -f "$file" ] || continue
+    format_file "$file"
+done
+
+if [ "$CHECK" -eq 1 ] && [ "${#failed[@]}" -gt 0 ]; then
+    if [ "$SILENT" -eq 0 ]; then
+        echo -e "\033[31mthe following files require formatting:\033[0m" >&2
+        for f in "${failed[@]}"; do
+            echo -e "\033[31m  $f\033[0m" >&2
+        done
+    fi
+    exit 1
+fi
