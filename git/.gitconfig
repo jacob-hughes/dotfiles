@@ -23,3 +23,4 @@
     wc = ! git diff --word-diff=porcelain | grep -e '^+[^-]' | wc -w
     sed = ! git grep -z --full-name -l '.' | xargs -0 sed -i -e
     search = '! ~/bin/git-search'
+    recent = branch --sort=-committerdate
