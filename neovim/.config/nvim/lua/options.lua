@@ -2,19 +2,14 @@ local indent = 4
 local opt = vim.opt -- to set options
 opt.winborder = "single"
 opt.backspace = { "indent", "eol", "start" }
-opt.clipboard = "unnamedplus"
 opt.completeopt = "menu,menuone,noselect"
 opt.cursorline = true
 opt.cursorcolumn = true
-opt.encoding = "utf-8" -- Set default encoding to UTF-8
 opt.foldenable = true
 opt.foldmethod = "manual"
 -- opt.formatoptions = "l"
-opt.hidden = true -- Enable background buffers
-opt.hlsearch = true -- Highlight found searches
 opt.ignorecase = true -- Ignore case
 opt.inccommand = "split" -- Get a preview of replacements
-opt.incsearch = true -- Shows the match while typing
 opt.joinspaces = false -- No double spaces with join
 vim.o.lazyredraw = true
 opt.linebreak = true -- Stop words being broken on wrap
@@ -41,14 +36,12 @@ opt.spelllang = { "en_gb" }
 opt.splitbelow = true -- Put new windows below current
 opt.splitright = true -- Put new windows right of current
 -- opt.splitkeep = "screen" -- Stops screen jumping when splits below are opened
--- opt.termguicolors = true -- You will have bad experience for diagnostic messages when it's default 4000.
 opt.title = true -- Allows neovom to send the Terminal details of the current window, instead of just getting 'v'
 -- Give me some fenced codeblock goodness
 vim.g.markdown_fenced_languages = { "html", "javascript", "typescript", "css", "scss", "lua", "vim" }
 vim.o.whichwrap = vim.o.whichwrap .. "<,>" -- Wrap movement between lines in edit mode with arrows
 opt.wrap = true
 -- opt.cc = "80"
-opt.mouse = "a"
 opt.guicursor =
 	"n-v-c-sm:block-nCursor-blinkwait50-blinkon50-blinkoff50,i-ci-ve:ver25-Cursor-blinkon100-blinkoff100,r-cr-o:hor20"
 -- vim.notify = require("notify")
@@ -57,7 +50,6 @@ opt.timeoutlen = 300 -- The time before a key sequence should complete
 opt.cpoptions:append(">") -- when you yank multiple times into a register, this puts each on a new line
 opt.nrformats:append("alpha") -- this means you can increment lists that have letters with `g ctrl-a`
 opt.ph = 15 -- the number is the number of entries to show before scrollbars, not px!
-opt.cmdheight = 1
 opt.virtualedit = "block" -- allows using visual blocks beyond the end of a line
 opt.pumblend = 5 -- partial opacity of pop up menu, this causes characters in lspkind to render incorrect width and means that you have to set up kitty to use narrow symbols. See https://github.com/kovidgoyal/kitty/discussions/7774#discussioncomment-10442608
 local api = vim.api
