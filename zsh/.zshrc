@@ -84,6 +84,7 @@ zstyle ':completion:*:git-checkout:*' sort false
 zstyle ':completion:*:descriptions' format '[%d]'
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*:cat:*:*' ignored-patterns '(*.o|*.so|*.bin|*.pdf|*.png|*.wav)'
+zstyle ':completion:*' file-patterns '%p(D):globbed-files *(D-/):directories' '*(D):all-files'
 
 # Linux alias
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
