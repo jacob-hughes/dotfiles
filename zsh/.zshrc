@@ -26,9 +26,6 @@ SAVEHIST=10000
 PROMPT='%{%F{blue}%}%~%{%f%}$(git branch --show-current 2>/dev/null | sed "s/.\+/ %{%F{242}%}· &%{%f%}/")
 %F{%(?.green.red)}›%f '
 
-# Load custom functions
-autoload -z edit ineachdir lspath reset_broken_term
-
 # Path configurations
 export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
