@@ -31,6 +31,7 @@ export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.fzf/bin:$PATH" # FZF
 export PATH="$HOME/.cargo/bin:$PATH" # Rust
+export PATH="/opt/neovim/bin:$PATH"
 
 # Platform specific
 if [[ "$OSTYPE" == "darwin"* ]]; then
