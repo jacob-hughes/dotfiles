@@ -99,6 +99,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 alias ls='ls -lAh --color=auto'
+alias e="nvim"
 
 # Git aliases
 alias g="git status"
